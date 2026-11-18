@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>梯形 - 香港小學數學</title>
+  <!-- 引入 html2canvas 程式庫以支援報告圖片下載 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* 全局樣式與 iPad 觸控優化 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: #f0f4f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      touch-action: manipulation;
+    }
+
+    /* 頂部導覽列 */
+    header {
+      background-color: #2b5278;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .lang-btn {
+      background-color: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      min-height: 44px;
+    }
+
+    .lang-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #2b5278;
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+
+    /* 首頁選單網格 */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid transparent;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .card:hover, .card:active {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-color: #4a90e2;
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      color: #1a365d;
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* 練習界面 */
+    .quiz-wrapper {
+      max-width: 820px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .back-nav-btn {
+      background: white;
+      border: 1px solid #cbd5e0;
+      color: #4a5568;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      transition: all 0.2s;
+      min-height: 44px;
+    }
+
+    .back-nav-btn:hover {
+      background-color: #edf2f7;
+      color: #2b6cb0;
+    }
+
+    .quiz-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      width: 100%;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #edf2f7;
+      padding-bottom: 12px;
+    }
+
+    .quiz-progress {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #3182ce;
+    }
+
+    .unit-tag {
+      background-color: #ebf8ff;
+      color: #2b6cb0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .tier-easy { background-color: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
+    .tier-medium { background-color: #feebc8; color: #744210; border: 1px solid #fbd38d; }
+    .tier-hard { background-color: #fed7d7; color: #742a2a; border: 1px solid #feb2b2; }
+
+    /* 題目展示區 */
+    .question-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0 20px 0;
+      min-height: 200px;
+    }
+
+    .q-story-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2d3748;
+      margin-bottom: 15px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* 判斷題句子的呈現框 */
+    .statement-box {
+      background-color: #f8fafc;
+      border: 2px solid #cbd5e0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 互動畫板區域 (SVG容器) */
+    .canvas-container {
+      width: 100%;
+      max-width: 500px;
+      background-color: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 15px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .line-svg {
+      width: 100%;
+      height: auto;
+      max-height: 350px;
+      touch-action: none;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* 選擇按鈕 */
+    .options-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .mc-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 650px;
+      margin-bottom: 15px;
+    }
+
+    .mc-stack .opt-btn {
+      text-align: left;
+      padding: 16px 20px;
+      justify-content: flex-start;
+    }
+
+    .opt-btn {
+      padding: 12px 24px;
+      border: 2px solid #cbd5e0;
+      background: white;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      color: #4a5568;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    .opt-btn:hover {
+      background-color: #f7fafc;
+    }
+
+    .opt-btn.selected {
+      border-color: #3182ce;
+      background: #ebf8ff;
+      color: #2b6cb0;
+      font-weight: bold;
+      transform: scale(1.02);
+    }
+    
+    .opt-btn.wrong-selected {
+      border-color: #ef4444;
+      background: #fef2f2;
+      color: #b91c1c;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    .opt-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 按鈕樣式 */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      text-align: center;
+      min-height: 48px;
+    }
+
+    .btn:active { transform: scale(0.99); }
+    .btn-primary { background-color: #3182ce; color: white; }
+    .btn-primary:hover { background-color: #2b6cb0; }
+    .btn-success { background-color: #38a169; color: white; }
+    .btn-success:hover { background-color: #2f855a; }
+    .btn-purple { background-color: #8e44ad; color: white; margin-bottom: 10px; }
+    .btn-purple:hover { background-color: #7d3c98; }
+    .btn-sky { background-color: #38bdf8; color: white; margin-bottom: 10px; }
+    .btn-sky:hover { background-color: #0284c7; }
+    .btn-gray { background-color: #7f8c8d; color: white; }
+    .btn-gray:hover { background-color: #636e72; }
+    .btn-outline { background-color: transparent; border: 2px solid #cbd5e0; color: #4a5568; }
+    .btn-outline:hover { background-color: #f7fafc; }
+
+    /* 搖晃動畫 */
+    .shake-animation {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+
+    /* 反饋與提示訊息 */
+    .feedback-box {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 12px;
+      text-align: left;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .feedback-success { background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; text-align: center; }
+    .feedback-warning { background-color: #feebc8; color: #744210; border: 1px solid #fbd38d; }
+    .feedback-danger { background-color: #fff5f5; color: #742a2a; border: 1px solid #feb2b2; }
+
+    /* 分析報告界面 */
+    .report-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 680px;
+      margin: 0 auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .report-title {
+      text-align: center;
+      color: #3182ce;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .report-section {
+      background-color: #f8fafc;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+    }
+
+    .report-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      color: #4a5568;
+      font-size: 0.98rem;
+    }
+
+    .report-row.dashed { border-bottom: 1px dashed #cbd5e0; }
+    .report-val { font-weight: bold; }
+    .val-green { color: #276749; }
+    .val-red { color: #9b2c2c; }
+    .val-blue { color: #0284c7; }
+
+    .section-label {
+      font-weight: bold;
+      color: #2d3748;
+      margin: 18px 0 10px 0;
+      font-size: 1.05rem;
+    }
+
+    .list-box {
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .list-box.correct-bg { background-color: #f7fafc; }
+    .list-box.wrong-bg { background-color: #f7fafc; }
+
+    .list-title {
+      font-weight: bold;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .item-card-correct {
+      background: #f0fff4;
+      border: 1px solid #c6f6d5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.95rem;
+      color: #22543d;
+    }
+
+    .item-card-wrong {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.95rem;
+      color: #9b2c2c;
+    }
+
+    /* Modal 彈窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-box h3 { margin-bottom: 12px; color: #2b5278; }
+    .modal-box p { margin-bottom: 20px; color: #4a5568; line-height: 1.5; }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+      .quiz-card { padding: 20px 14px; }
+      .q-story-title { font-size: 1.1rem; }
+      .btn { font-size: 1rem; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <header>
+    <h1 id="header-title">梯形</h1>
+    <button id="lang-toggle-btn" class="lang-btn" onclick="toggleLanguage()">English</button>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <!-- 1. 首頁選擇界面 -->
+      <div id="page-home">
+        <h2 id="home-subtitle" class="page-title">請選擇學習單元</h2>
+        <div class="menu-grid">
+          <div class="card" onclick="startQuiz()">
+            <h3><span id="title-unit1">梯形</span></h3>
+            <p id="desc-opt1">學習梯形的定義、特質，並辨別不同類型的四邊形是否為梯形。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 答題界面 -->
+      <div id="page-quiz" class="hidden">
+        <div class="quiz-wrapper">
+          <button class="back-nav-btn" onclick="askReturnHome()">
+            <span id="lbl-back-btn">← 返回單元選擇</span>
+          </button>
+
+          <div class="quiz-card">
+            <div class="quiz-header">
+              <div>
+                <span id="quiz-mode-name" class="unit-tag">梯形</span>
+                <span id="quiz-tier-badge" class="tier-badge tier-easy">初階</span>
+              </div>
+              <span id="quiz-progress-text" class="quiz-progress">題目 1 / 10</span>
+            </div>
+
+            <!-- 題目動態渲染區 -->
+            <div id="question-display-area" class="question-display"></div>
+
+            <!-- 操作與提交區域 -->
+            <div id="action-area">
+              <div class="btn-group">
+                <button id="btn-submit" class="btn btn-primary" onclick="checkAnswer()">提交答案</button>
+                <button id="btn-next" class="btn btn-success hidden" onclick="nextQuestion()">再答一題 ➔</button>
+              </div>
+            </div>
+
+            <!-- 解題反饋區 -->
+            <div id="feedback-area" class="hidden"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 表現分析報告 -->
+      <div id="page-report" class="hidden">
+        <div id="report-card-to-capture" class="report-card">
+          <h2 id="report-main-title" class="report-title">練習完成！表現分析報告</h2>
+
+          <div class="report-section">
+            <div class="report-row dashed">
+              <span id="lbl-start-time">開始時間：</span>
+              <span id="val-start-time" class="report-val">--</span>
+            </div>
+            <div class="report-row dashed">
+              <span id="lbl-end-time">完成時間：</span>
+              <span id="val-end-time" class="report-val">--</span>
+            </div>
+            <div class="report-row">
+              <span id="lbl-duration">總用時：</span>
+              <span id="val-duration" class="report-val val-blue">--</span>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <div class="report-row dashed">
+              <span id="lbl-total-correct">總答對題數：</span>
+              <span id="val-correct-count" class="report-val val-green">0 / 10</span>
+            </div>
+            <div class="report-row">
+              <span id="lbl-accuracy">整體正確率：</span>
+              <span id="val-accuracy" class="report-val">0%</span>
+            </div>
+          </div>
+
+          <div class="section-label" id="lbl-mastery-title">各主題掌握度分析</div>
+          <div class="report-section">
+            <div class="report-row">
+              <span id="report-unit-name">梯形</span>
+              <span id="val-unit-mastery" class="report-val">0 / 10 (0%)</span>
+            </div>
+          </div>
+
+          <div class="list-box correct-bg">
+            <div class="list-title val-green">
+              <span>☑</span> <span id="lbl-correct-title">答對的題目</span>
+            </div>
+            <div id="correct-list-container"></div>
+          </div>
+
+          <div class="list-box wrong-bg">
+            <div class="list-title val-red">
+              <span>✕</span> <span id="lbl-wrong-title">答錯 / 需要協助的題目</span>
+            </div>
+            <div id="wrong-list-container"></div>
+          </div>
+
+          <div data-html2canvas-ignore="true" style="margin-top: 20px;">
+            <button class="btn btn-purple" onclick="downloadReportImage()"><span id="lbl-btn-download">💾 下載報告圖片</span></button>
+            <button class="btn btn-sky" onclick="retryPractice()"><span id="lbl-btn-retry">🔄 我想再試</span></button>
+            <button class="btn btn-gray" onclick="goHome()"><span id="lbl-btn-home">回到主頁重新選擇</span></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 通用 Modal 彈窗 -->
+  <div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modal-title">標題</h3>
+      <p id="modal-msg">內容訊息</p>
+      <div class="modal-buttons">
+        <button id="modal-cancel-btn" class="btn btn-gray" style="flex: 1;" onclick="closeModal()">取消</button>
+        <button id="modal-confirm-btn" class="btn btn-primary" style="flex: 1;" onclick="confirmModalAction()">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 多語言字典
+    const i18n = {
+      zh: {
+        headerTitle: "梯形",
+        langBtn: "English",
+        homeSubtitle: "請選擇學習單元",
+        titleUnit1: "梯形",
+        descOpt1: "學習梯形的定義、特質，並辨別不同類型的四邊形是否為梯形。",
+        unit1: "梯形",
+        tierEasy: "初階",
+        tierMedium: "中階",
+        tierHard: "高階",
+        qProgress: "題目",
+        questionLabel: "第 {n} 題",
+        ansLabel: "答案",
+        yourAnsLabel: "你的回答",
+        correctAnsLabel: "正確答案",
+        backBtn: "← 返回單元選擇",
+        submitBtn: "提交答案",
+        nextBtn: "再答一題 ➔",
+        praise: ["太棒了！答對了！🌟", "非常優秀，完全正確！👏", "答對了！繼續保持！🎉", "真聰明！完全掌握了梯形的特性！💪"],
+        encourage: ["再試一次！仔細觀察圖形的特徵！", "沒關係，重新思考一下梯形的定義！", "加油！再試試看！"],
+        noWrong: "太厲害了！沒有答錯的題目！",
+        noCorrect: "無答對題目",
+        reportTitle: "練習完成！表現分析報告",
+        startTime: "開始時間：",
+        endTime: "完成時間：",
+        durationTime: "總用時：",
+        totalCorrect: "總答對題數：",
+        accuracy: "整體正確率：",
+        masteryTitle: "各主題掌握度分析",
+        correctTitle: "答對的題目",
+        wrongTitle: "答錯 / 需要協助的題目",
+        btnDownload: "💾 下載報告圖片",
+        btnRetry: "🔄 我想再試",
+        btnHome: "回到主頁重新選擇",
+        modalReturnTitle: "返回單元選擇",
+        modalReturnMsg: "確定要返回主選單嗎？目前的答題進度將不會被保存。",
+        stepTitle: "完整解題思路：",
+        
+        q_shape_prompt: "請問以下四邊形是否為「梯形」？",
+        optYes: "是梯形",
+        optNo: "不是梯形",
+        
+        q_statement_prompt: "請判斷以下句子是否正確：",
+        optTrue: "正確",
+        optFalse: "錯誤",
+        
+        sol_def: "梯形的定義是：<strong>只有一組</strong>對邊平行的四邊形。",
+        sol_pairs: "這個圖形有 {n} 組平行線，因此它<strong>{res}</strong>梯形。",
+        sol_is: "是",
+        sol_isNot: "不是"
+      },
+      en: {
+        headerTitle: "Trapezoids",
+        langBtn: "繁體中文",
+        homeSubtitle: "Please Select a Learning Unit",
+        titleUnit1: "Trapezoids",
+        descOpt1: "Learn the definition and properties of trapezoids, and identify them.",
+        unit1: "Trapezoids",
+        tierEasy: "Basic",
+        tierMedium: "Medium",
+        tierHard: "Hard",
+        qProgress: "Question",
+        questionLabel: "Q{n}",
+        ansLabel: "Ans",
+        yourAnsLabel: "Your Answer",
+        correctAnsLabel: "Correct Answer",
+        backBtn: "← Back to Selection",
+        submitBtn: "Submit Answer",
+        nextBtn: "Next Question ➔",
+        praise: ["Great job! That's correct! 🌟", "Excellent! You got it right! 👏", "Correct! Keep it up! 🎉", "Awesome! You mastered trapezoids! 💪"],
+        encourage: ["Try again! Observe the shape carefully!", "Take another look at the definition of a trapezoid!", "Keep going! Give it another try!"],
+        noWrong: "Amazing! No incorrect answers!",
+        noCorrect: "No correct questions",
+        reportTitle: "Practice Completed! Performance Report",
+        startTime: "Start Time:",
+        endTime: "Completion Time:",
+        durationTime: "Time Taken:",
+        totalCorrect: "Total Correct:",
+        accuracy: "Overall Accuracy:",
+        masteryTitle: "Topic Mastery Analysis",
+        correctTitle: "Correct Questions",
+        wrongTitle: "Incorrect / Needs Assistance",
+        btnDownload: "💾 Download Report Image",
+        btnRetry: "🔄 Try Again",
+        btnHome: "Back to Home",
+        modalReturnTitle: "Return to Stage Selection",
+        modalReturnMsg: "Are you sure you want to return to home? Current progress will be lost.",
+        stepTitle: "Solution Breakdown:",
+        
+        q_shape_prompt: "Is the following quadrilateral a 'Trapezoid'?",
+        optYes: "Yes, it is",
+        optNo: "No, it's not",
+
+        q_statement_prompt: "Please determine if the following statement is correct:",
+        optTrue: "True",
+        optFalse: "False",
+
+        sol_def: "The definition of a trapezoid: a quadrilateral with <strong>exactly one pair</strong> of parallel sides.",
+        sol_pairs: "This shape has {n} pair(s) of parallel lines, so it <strong>{res}</strong> a trapezoid.",
+        sol_is: "IS",
+        sol_isNot: "IS NOT"
+      }
+    };
+
+    let currentLang = 'zh';
+    let questions = [];
+    let currentQIndex = 0;
+    let wrongAttempts = 0;
+    let records = [];
+    let startTimeObj = null;
+    let modalActionCallback = null;
+    let currentSelectedOptionValue = null;
+
+    function getRandomChoice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffleArray(arr) {
+      const array = [...arr];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // 四邊形圖形資料庫
+    const shapesData = [
+      { id: 'parallelogram', isTrapezoid: false, isTricky: false, name: {zh: '平行四邊形', en: 'Parallelogram'}, pairs: 2, points: "150,80 350,80 300,220 100,220", arrows: [[150,80,350,80,1],[100,220,300,220,1],[150,80,100,220,2],[350,80,300,220,2]] },
+      { id: 'rectangle', isTrapezoid: false, isTricky: false, name: {zh: '長方形', en: 'Rectangle'}, pairs: 2, points: "150,80 350,80 350,220 150,220", arrows: [[150,80,350,80,1],[150,220,350,220,1],[150,80,150,220,2],[350,80,350,220,2]], rightAngles: [[150,80,15,15], [350,80,-15,15], [350,220,-15,-15], [150,220,15,-15]] },
+      { id: 'square', isTrapezoid: false, isTricky: false, name: {zh: '正方形', en: 'Square'}, pairs: 2, points: "150,50 350,50 350,250 150,250", arrows: [[150,50,350,50,1],[150,250,350,250,1],[150,50,150,250,2],[350,50,350,250,2]], rightAngles: [[150,50,15,15], [350,50,-15,15], [350,250,-15,-15], [150,250,15,-15]] },
+      { id: 'rhombus', isTrapezoid: false, isTricky: false, name: {zh: '菱形', en: 'Rhombus'}, pairs: 2, points: "250,50 350,150 250,250 150,150", arrows: [[250,50,350,150,1],[150,150,250,250,1],[250,50,150,150,2],[350,150,250,250,2]] },
+      { id: 'kite', isTrapezoid: false, isTricky: false, name: {zh: '箏形', en: 'Kite'}, pairs: 0, points: "250,50 350,120 250,250 150,120", arrows: [] },
+      { id: 'tall_parallelogram', isTrapezoid: false, isTricky: false, name: {zh: '平行四邊形', en: 'Parallelogram'}, pairs: 2, points: "180,50 280,50 320,250 220,250", arrows: [[180,50,280,50,1],[220,250,320,250,1],[180,50,220,250,2],[280,50,320,250,2]] },
+      
+      // 容易錯選的沒有特徵四邊形
+      { id: 'tricky_quad_1', isTrapezoid: false, isTricky: true, name: {zh: '沒有特徵的四邊形', en: 'General Quadrilateral'}, pairs: 0, points: "150,220 330,220 350,90 210,70", arrows: [] }, // 參考圖形 C (底平，上方及側邊均歪斜)
+      { id: 'tricky_quad_2', isTrapezoid: false, isTricky: true, name: {zh: '沒有特徵的四邊形', en: 'General Quadrilateral'}, pairs: 0, points: "120,240 380,210 340,90 180,80", arrows: [] }, // 參考圖形 F (上下皆微微歪斜且不平行)
+      
+      { id: 'general_trapezoid', isTrapezoid: true, isTricky: false, name: {zh: '普通梯形', en: 'General Trapezoid'}, pairs: 1, points: "200,80 300,80 380,220 120,220", arrows: [[200,80,300,80,1],[120,220,380,220,1]] },
+      { id: 'right_trapezoid', isTrapezoid: true, isTricky: false, name: {zh: '直角梯形', en: 'Right Trapezoid'}, pairs: 1, points: "150,80 300,80 350,220 150,220", arrows: [[150,80,300,80,1],[150,220,350,220,1]], rightAngles: [[150,80,15,15], [150,220,15,-15]] },
+      { id: 'isosceles_trapezoid', isTrapezoid: true, isTricky: false, name: {zh: '等腰梯形', en: 'Isosceles Trapezoid'}, pairs: 1, points: "200,80 300,80 350,220 150,220", arrows: [[200,80,300,80,1],[150,220,350,220,1]] },
+      { id: 'tall_trapezoid', isTrapezoid: true, isTricky: false, name: {zh: '普通梯形', en: 'General Trapezoid'}, pairs: 1, points: "210,50 290,50 320,250 180,250", arrows: [[210,50,290,50,1],[180,250,320,250,1]] },
+      { id: 'inverted_right_trapezoid', isTrapezoid: true, isTricky: false, name: {zh: '直角梯形', en: 'Right Trapezoid'}, pairs: 1, points: "200,80 350,80 250,220 200,220", arrows: [[200,80,350,80,1],[200,220,250,220,1]], rightAngles: [[200,80,15,15], [200,220,15,-15]] }
+    ];
+
+    // 中階文字敘述題庫 (分為 4 大主題，每題抽 3 個不同主題)
+    const statementsData = [
+      // 主題 1：平行線數量
+      [
+        { qText: { zh: '梯形沒有對邊平行。', en: 'A trapezoid has no parallel sides.' }, answer: false, solution: { zh: '錯誤。梯形必須有「一組」對邊平行。', en: 'False. A trapezoid must have exactly one pair of parallel sides.' } },
+        { qText: { zh: '梯形只有一組對邊平行。', en: 'A trapezoid has exactly one pair of parallel sides.' }, answer: true, solution: { zh: '正確。這是梯形的定義。', en: 'True. This is the definition of a trapezoid.' } },
+        { qText: { zh: '梯形有 2 組對邊平行。', en: 'A trapezoid has 2 pairs of parallel sides.' }, answer: false, solution: { zh: '錯誤。有兩組對邊平行的圖形是「平行四邊形」，而梯形只有一組。', en: 'False. A shape with 2 pairs of parallel sides is a parallelogram; a trapezoid has exactly one pair.' } }
+      ],
+      // 主題 2：四邊形分類
+      [
+        { qText: { zh: '梯形是平行四邊形。', en: 'A trapezoid is a parallelogram.' }, answer: false, solution: { zh: '錯誤。平行四邊形有兩組對邊平行，而梯形只有一組，兩者是不同的四邊形。', en: 'False. A parallelogram has two pairs of parallel sides, while a trapezoid has only one pair.' } },
+        { qText: { zh: '梯形是四邊形。', en: 'A trapezoid is a quadrilateral.' }, answer: true, solution: { zh: '正確。梯形由四條直線組成，因此是四邊形的一種。', en: 'True. A trapezoid is formed by four straight lines, so it is a quadrilateral.' } }
+      ],
+      // 主題 3：等腰梯形
+      [
+        { qText: { zh: '等腰梯形的兩條腰的長度相等。', en: 'The two legs of an isosceles trapezoid are equal in length.' }, answer: true, solution: { zh: '正確。「等腰梯形」的特徵就是兩條不平行的對邊（腰）長度相等。', en: 'True. The key feature of an isosceles trapezoid is that its non-parallel sides (legs) are equal in length.' } },
+        { qText: { zh: '等腰梯形的兩條腰的長度不相等。', en: 'The two legs of an isosceles trapezoid are NOT equal in length.' }, answer: false, solution: { zh: '錯誤。「等腰梯形」的名稱由來就是因為它的兩條腰的長度必定相等。', en: 'False. The two non-parallel sides (legs) of an isosceles trapezoid are equal in length.' } }
+      ],
+      // 主題 4：直角梯形
+      [
+        { qText: { zh: '直角梯形只有一個直角。', en: 'A right trapezoid has only 1 right angle.' }, answer: false, solution: { zh: '錯誤。直角梯形的一條垂直腰會同時與上底和下底形成 2 個直角。', en: 'False. The perpendicular leg of a right trapezoid forms 2 right angles with both bases.' } },
+        { qText: { zh: '直角梯形有 2 個直角。', en: 'A right trapezoid has 2 right angles.' }, answer: true, solution: { zh: '正確。直角梯形的一條腰與平行的底邊垂直，剛好形成 2 個直角。', en: 'True. One leg is perpendicular to the parallel bases, forming exactly 2 right angles.' } },
+        { qText: { zh: '直角梯形有 3 個直角。', en: 'A right trapezoid has 3 right angles.' }, answer: false, solution: { zh: '錯誤。直角梯形只有 2 個直角。如果一個四邊形有 3 個直角，那它的第 4 個角也是直角，這就變成矩形了。', en: 'False. If a quadrilateral has 3 right angles, the 4th is also a right angle, making it a rectangle.' } }
+      ]
+    ];
+
+    function generateQuizQuestions() {
+      const qList = [];
+      const rotations = [0, 15, -15, 180];
+
+      // 1. 初階：7題 (3個梯形，4個不是梯形)
+      const trapezoids = shapesData.filter(s => s.isTrapezoid);
+      const trickyNonTraps = shapesData.filter(s => !s.isTrapezoid && s.isTricky);
+      const regularNonTraps = shapesData.filter(s => !s.isTrapezoid && !s.isTricky);
+      
+      // 確保抽取 3 個梯形
+      const selectedTraps = shuffleArray(trapezoids).slice(0, 3);
+      // 確保必須出 2 次容易錯選的四邊形
+      const selectedTricky = shuffleArray(trickyNonTraps).slice(0, 2); 
+      // 剩下的 2 個非梯形從常規形狀抽出
+      const selectedRegularNon = shuffleArray(regularNonTraps).slice(0, 2);
+
+      let basicShapes = [...selectedTraps, ...selectedTricky, ...selectedRegularNon];
+      basicShapes = shuffleArray(basicShapes); // 徹底打亂順序
+
+      basicShapes.forEach(shape => {
+        // 對於容易錯選的圖形，保留 0 度旋轉以呈現出圖片本意；其他則隨機旋轉
+        const rot = shape.isTricky ? 0 : getRandomChoice(rotations);
+        qList.push({ 
+            tier: 'easy', 
+            type: 'tf_shape', 
+            shapeObj: shape, 
+            rotation: rot,
+            answer: shape.isTrapezoid 
+        });
+      });
+
+      // 2. 中階：3題 (從 4 個主題中隨機抽出 3 個，每個主題隨機抽 1 題)
+      const selectedTopics = shuffleArray(statementsData).slice(0, 3);
+      const mediumQuestions = selectedTopics.map(topicGroup => {
+        const selectedStatement = getRandomChoice(topicGroup);
+        return {
+          tier: 'medium',
+          type: 'tf_statement',
+          qText: selectedStatement.qText,
+          answer: selectedStatement.answer,
+          solution: selectedStatement.solution
+        };
+      });
+      
+      // 打亂這 3 題中階題的順序
+      const shuffledMedium = shuffleArray(mediumQuestions);
+      shuffledMedium.forEach(q => {
+        qList.push(q);
+      });
+
+      return qList;
+    }
+
+    // 啟動測驗
+    function startQuiz() {
+      questions = generateQuizQuestions();
+      currentQIndex = 0;
+      records = [];
+      startTimeObj = new Date();
+
+      document.getElementById('page-home').classList.add('hidden');
+      document.getElementById('page-report').classList.add('hidden');
+      document.getElementById('page-quiz').classList.remove('hidden');
+
+      loadQuestion();
+    }
+
+    // 箭頭標記工具函式
+    function renderArrows(x1, y1, x2, y2, count, color="#16a34a") {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const theta = Math.atan2(dy, dx);
+      const midX = x1 + dx / 2;
+      const midY = y1 + dy / 2;
+      
+      const arrowLen = 18;
+      const angle = Math.PI / 6;
+      
+      let svg = '';
+      const offsets = count === 1 ? [0] : count === 2 ? [-12, 12] : [-20, 0, 20];
+      
+      offsets.forEach(offset => {
+          const cx = midX + Math.cos(theta) * offset;
+          const cy = midY + Math.sin(theta) * offset;
+          
+          const lx = cx - arrowLen * Math.cos(theta - angle);
+          const ly = cy - arrowLen * Math.sin(theta - angle);
+          const rx = cx - arrowLen * Math.cos(theta + angle);
+          const ry = cy - arrowLen * Math.sin(theta + angle);
+          
+          svg += `<polyline points="${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="none" stroke="${color}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+      });
+      return svg;
+    }
+
+    function renderShapeSVG(shapeObj, rotation, showSolution = false) {
+      let content = `<g transform="rotate(${rotation} 250 150)">`;
+      content += `<polygon points="${shapeObj.points}" fill="#f8fafc" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round" />`;
+      
+      // 繪製直角標記 (如果有)
+      if (shapeObj.rightAngles) {
+         shapeObj.rightAngles.forEach(ra => {
+             const [x, y, dx, dy] = ra;
+             content += `<polyline points="${x+dx},${y} ${x+dx},${y+dy} ${x},${y+dy}" fill="none" stroke="#1e293b" stroke-width="3" stroke-linejoin="miter" />`;
+         });
+      }
+
+      if (showSolution && shapeObj.arrows) {
+        shapeObj.arrows.forEach(arr => {
+          content += renderArrows(arr[0], arr[1], arr[2], arr[3], arr[4], "#16a34a");
+        });
+      }
+      content += `</g>`;
+      return `<svg viewBox="0 0 500 300" class="line-svg">${content}</svg>`;
+    }
+
+    function createOptionsGroup(labels, values, isStack = false) {
+      const container = document.createElement('div');
+      container.className = isStack ? 'mc-stack' : 'options-group';
+      labels.forEach((lbl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = lbl;
+        btn.onclick = () => {
+          if (document.getElementById('btn-submit').classList.contains('hidden')) return;
+          document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          currentSelectedOptionValue = values[idx];
+        };
+        container.appendChild(btn);
+      });
+      return container;
+    }
+
+    function loadQuestion() {
+      wrongAttempts = 0;
+      currentSelectedOptionValue = null;
+
+      const quizCard = document.querySelector('.quiz-card');
+      if (quizCard) {
+        quizCard.classList.remove('shake-animation');
+      }
+
+      const t = i18n[currentLang];
+      const q = questions[currentQIndex];
+
+      document.getElementById('quiz-mode-name').innerText = t.unit1;
+      const tierBadge = document.getElementById('quiz-tier-badge');
+      if (q.tier === 'easy') {
+        tierBadge.className = 'tier-badge tier-easy';
+        tierBadge.innerText = t.tierEasy;
+      } else if (q.tier === 'medium') {
+        tierBadge.className = 'tier-badge tier-medium';
+        tierBadge.innerText = t.tierMedium;
+      }
+
+      document.getElementById('quiz-progress-text').innerText = `${t.qProgress} ${currentQIndex + 1} / ${questions.length}`;
+
+      const displayArea = document.getElementById('question-display-area');
+      displayArea.innerHTML = '';
+
+      const qTitleEl = document.createElement('div');
+      qTitleEl.className = 'q-story-title';
+      
+      if (q.type === 'tf_shape') {
+          qTitleEl.innerText = t.q_shape_prompt;
+          displayArea.appendChild(qTitleEl);
+          
+          const canvasContainer = document.createElement('div');
+          canvasContainer.className = 'canvas-container';
+          canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation);
+          displayArea.appendChild(canvasContainer);
+          
+          displayArea.appendChild(createOptionsGroup([t.optYes, t.optNo], ['true', 'false']));
+      } else if (q.type === 'tf_statement') {
+          qTitleEl.innerText = t.q_statement_prompt;
+          displayArea.appendChild(qTitleEl);
+          
+          const statementBox = document.createElement('div');
+          statementBox.className = 'statement-box';
+          statementBox.innerText = q.qText[currentLang];
+          displayArea.appendChild(statementBox);
+          
+          displayArea.appendChild(createOptionsGroup([t.optTrue, t.optFalse], ['true', 'false']));
+      }
+
+      document.getElementById('feedback-area').classList.add('hidden');
+      document.getElementById('feedback-area').innerHTML = '';
+      document.getElementById('btn-submit').classList.remove('hidden');
+      document.getElementById('btn-next').classList.add('hidden');
+      document.getElementById('btn-submit').innerText = t.submitBtn;
+    }
+
+    function checkAnswer() {
+      const q = questions[currentQIndex];
+      const t = i18n[currentLang];
+      const feedback = document.getElementById('feedback-area');
+
+      if (currentSelectedOptionValue === null) {
+        alert(currentLang === 'zh' ? "請選擇一個答案！" : "Please select an answer!");
+        return;
+      }
+
+      let isCorrect = false;
+      let userAnsDisplay = "";
+      let targetAnsStr = "";
+
+      if (q.type === 'tf_shape') {
+          userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optYes : t.optNo;
+          targetAnsStr = q.answer ? t.optYes : t.optNo;
+          isCorrect = (currentSelectedOptionValue === q.answer.toString());
+      } else if (q.type === 'tf_statement') {
+          userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optTrue : t.optFalse;
+          targetAnsStr = q.answer ? t.optTrue : t.optFalse;
+          isCorrect = (currentSelectedOptionValue === q.answer.toString());
+      }
+
+      if (!records[currentQIndex]) {
+        records[currentQIndex] = {
+          qIndex: currentQIndex + 1,
+          questionObj: q,
+          targetAns: targetAnsStr,
+          userFirstWrong: null,
+          isCorrectOnFirstTry: false,
+          solved: false
+        };
+      }
+
+      if (isCorrect) {
+        if (wrongAttempts === 0) records[currentQIndex].isCorrectOnFirstTry = true;
+        records[currentQIndex].solved = true;
+
+        const randomPraise = t.praise[Math.floor(Math.random() * t.praise.length)];
+        feedback.className = "feedback-box feedback-success";
+        feedback.innerHTML = `<strong>${randomPraise}</strong>`;
+        feedback.classList.remove('hidden');
+
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('btn-next').classList.remove('hidden');
+        document.getElementById('btn-next').focus();
+        
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.disabled = true;
+            b.classList.remove('wrong-selected');
+        });
+      } else {
+        wrongAttempts++;
+        if (records[currentQIndex].userFirstWrong === null) {
+          records[currentQIndex].userFirstWrong = userAnsDisplay;
+        }
+
+        triggerShakeAnimation();
+
+        // 只有兩個選項，第一次答錯直接給予詳解
+        let solutionFeedback = "";
+        
+        if (q.type === 'tf_shape') {
+           const canvasContainer = document.querySelector('.canvas-container');
+           canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation, true);
+           
+           let resText = q.answer ? t.sol_is : t.sol_isNot;
+           let pairText = t.sol_pairs.replace('{n}', q.shapeObj.pairs).replace('{res}', resText);
+           solutionFeedback = `${t.sol_def}<br>${pairText} (圖形名稱: <strong>${q.shapeObj.name[currentLang]}</strong>)`;
+        } else if (q.type === 'tf_statement') {
+           solutionFeedback = q.solution[currentLang];
+        }
+        
+        feedback.className = "feedback-box feedback-danger";
+        feedback.innerHTML = `<div><strong>${t.stepTitle}</strong></div><div style="margin-top:6px;">${solutionFeedback}</div>`;
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('btn-next').classList.remove('hidden');
+        document.getElementById('btn-next').focus();
+        
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.disabled = true;
+            
+            // 如果是學生錯選的答案，加上錯誤樣式 (紅色搖晃)
+            if (b.classList.contains('selected')) {
+                b.classList.add('wrong-selected');
+            }
+            
+            // Highlight correct answer (綠色標示)
+            if (q.type === 'tf_shape') {
+                if ((b.innerText === t.optYes && q.answer) || (b.innerText === t.optNo && !q.answer)) {
+                    b.classList.remove('wrong-selected'); 
+                    b.classList.add('selected');
+                    b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
+                } else { 
+                    b.classList.remove('selected'); 
+                }
+            } else if (q.type === 'tf_statement') {
+                if ((b.innerText === t.optTrue && q.answer) || (b.innerText === t.optFalse && !q.answer)) {
+                    b.classList.remove('wrong-selected');
+                    b.classList.add('selected');
+                    b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
+                } else { 
+                    b.classList.remove('selected'); 
+                }
+            }
+        });
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    function triggerShakeAnimation() {
+      const card = document.querySelector('.quiz-card');
+      if (card) {
+        card.classList.remove('shake-animation');
+        void card.offsetWidth;
+        card.classList.add('shake-animation');
+        card.addEventListener('animationend', function() {
+          card.classList.remove('shake-animation');
+        }, { once: true });
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      const t = i18n[currentLang];
+      
+      document.getElementById('header-title').innerText = t.headerTitle;
+      document.getElementById('lang-toggle-btn').innerText = t.langBtn;
+      document.getElementById('home-subtitle').innerText = t.homeSubtitle;
+      document.getElementById('title-unit1').innerText = t.titleUnit1;
+      document.getElementById('desc-opt1').innerText = t.descOpt1;
+      document.getElementById('lbl-back-btn').innerText = t.backBtn;
+
+      if (!document.getElementById('page-quiz').classList.contains('hidden')) {
+        loadQuestion();
+      }
+    }
+
+    function formatDate(date) {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const mins = String(date.getMinutes()).padStart(2, '0');
+      const secs = String(date.getSeconds()).padStart(2, '0');
+      return `${hours}:${mins}:${secs}`;
+    }
+
+    function formatDuration(start, end) {
+      const diffSecs = Math.floor((end - start) / 1000);
+      const mins = Math.floor(diffSecs / 60);
+      const secs = diffSecs % 60;
+      return currentLang === 'zh' ? `${mins} 分 ${secs} 秒` : `${mins}m ${secs}s`;
+    }
+
+    function getQuestionSummaryText(q) {
+      if (q.type === 'tf_shape') {
+          return currentLang === 'zh' ? `判斷圖形是否梯形 (${q.shapeObj.name.zh})` : `Identify if shape is a trapezoid (${q.shapeObj.name.en})`;
+      } else {
+          return currentLang === 'zh' ? `判斷句子正確性` : `True/False Statement Evaluation`;
+      }
+    }
+
+    function nextQuestion() {
+      currentQIndex++;
+      if (currentQIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showReport();
+      }
+    }
+
+    function showReport() {
+      const endTimeObj = new Date();
+      const t = i18n[currentLang];
+
+      document.getElementById('page-quiz').classList.add('hidden');
+      document.getElementById('page-report').classList.remove('hidden');
+
+      document.getElementById('report-main-title').innerText = t.reportTitle;
+      document.getElementById('lbl-start-time').innerText = t.startTime;
+      document.getElementById('lbl-end-time').innerText = t.endTime;
+      document.getElementById('lbl-duration').innerText = t.durationTime;
+      document.getElementById('lbl-total-correct').innerText = t.totalCorrect;
+      document.getElementById('lbl-accuracy').innerText = t.accuracy;
+      document.getElementById('lbl-mastery-title').innerText = t.masteryTitle;
+      document.getElementById('lbl-correct-title').innerText = t.correctTitle;
+      document.getElementById('lbl-wrong-title').innerText = t.wrongTitle;
+      document.getElementById('lbl-btn-download').innerText = t.btnDownload;
+      document.getElementById('lbl-btn-retry').innerText = t.btnRetry;
+      document.getElementById('lbl-btn-home').innerText = t.btnHome;
+
+      document.getElementById('val-start-time').innerText = formatDate(startTimeObj);
+      document.getElementById('val-end-time').innerText = formatDate(endTimeObj);
+      document.getElementById('val-duration').innerText = formatDuration(startTimeObj, endTimeObj);
+
+      let correctCount = 0;
+      records.forEach(r => { if (r && r.isCorrectOnFirstTry) correctCount++; });
+      const total = questions.length;
+      const accuracyPct = Math.round((correctCount / total) * 100);
+
+      document.getElementById('report-unit-name').innerText = t.unit1;
+      document.getElementById('val-unit-mastery').innerText = `${correctCount} / ${total} (${accuracyPct}%)`;
+
+      const correctContainer = document.getElementById('correct-list-container');
+      correctContainer.innerHTML = '';
+      const correctItems = records.filter(r => r && r.isCorrectOnFirstTry);
+
+      if (correctItems.length === 0) {
+        correctContainer.innerHTML = `<div style="font-size:0.95rem; color:#718096; padding-left:5px;">${t.noCorrect}</div>`;
+      } else {
+        correctItems.forEach(item => {
+          const qText = t.questionLabel.replace('{n}', item.qIndex);
+          const qExprText = getQuestionSummaryText(item.questionObj);
+          correctContainer.innerHTML += `
+            <div class="item-card-correct">
+              <div class="item-q-title" style="font-weight:bold;">${qText} : ${qExprText}</div>
+              <div class="item-ans-text">${t.ansLabel} : ${item.targetAns}</div>
+            </div>`;
+        });
+      }
+
+      const wrongContainer = document.getElementById('wrong-list-container');
+      wrongContainer.innerHTML = '';
+      const wrongItems = records.filter(r => !r || !r.isCorrectOnFirstTry);
+
+      if (wrongItems.length === 0) {
+        wrongContainer.innerHTML = `<div style="font-size:0.95rem; color:#38a169; padding-left:5px;">${t.noWrong}</div>`;
+      } else {
+        wrongItems.forEach((item) => {
+          if (!item) return;
+          const qText = t.questionLabel.replace('{n}', item.qIndex);
+          const qExprText = getQuestionSummaryText(item.questionObj);
+          const userAnsDisplay = item.userFirstWrong !== null ? item.userFirstWrong : '-';
+          wrongContainer.innerHTML += `
+            <div class="item-card-wrong">
+              <div class="item-q-title" style="font-weight:bold;">${qText} : ${qExprText}</div>
+              <div class="item-ans-text">${t.yourAnsLabel} : ${userAnsDisplay} | ${t.correctAnsLabel} : ${item.targetAns}</div>
+            </div>`;
+        });
+      }
+    }
+
+    function retryPractice() {
+      startQuiz();
+    }
+
+    function goHome() {
+      document.getElementById('page-report').classList.add('hidden');
+      document.getElementById('page-quiz').classList.add('hidden');
+      document.getElementById('page-home').classList.remove('hidden');
+      document.getElementById('lang-toggle-btn').classList.remove('hidden');
+    }
+
+    function askReturnHome() {
+      const t = i18n[currentLang];
+      showCustomModal(t.modalReturnTitle, t.modalReturnMsg, () => { goHome(); });
+    }
+
+    function showCustomModal(title, msg, onConfirm) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-msg').innerText = msg;
+      modalActionCallback = onConfirm;
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+      if (onConfirm) cancelBtn.classList.remove('hidden');
+      else cancelBtn.classList.add('hidden');
+      document.getElementById('custom-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('custom-modal').classList.remove('active');
+      modalActionCallback = null;
+    }
+
+    function confirmModalAction() {
+      if (modalActionCallback) modalActionCallback();
+      closeModal();
+    }
+
+    function downloadReportImage() {
+      const reportElement = document.getElementById('report-card-to-capture');
+      if (typeof html2canvas !== 'undefined') {
+        html2canvas(reportElement, { scale: 2 }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `Trapezoids_Report_${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
+      }
+    }
+  </script>
+  <!-- iPad 優化修正腳本 -->
+  <script src="https://mathteacher1618.github.io/my_fixes/ipad_fix.js"></script>
+</body>
+</html>
