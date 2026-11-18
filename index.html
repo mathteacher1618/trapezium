@@ -535,9 +535,13 @@
       <div id="page-home">
         <h2 id="home-subtitle" class="page-title">請選擇學習單元</h2>
         <div class="menu-grid">
-          <div class="card" onclick="startQuiz()">
-            <h3><span id="title-unit1">梯形</span></h3>
+          <div class="card" onclick="startQuiz('unit1')">
+            <h3><span id="title-unit1">單元一 : 認識梯形</span></h3>
             <p id="desc-opt1">學習梯形的定義、特質，並辨別不同類型的四邊形是否為梯形。</p>
+          </div>
+          <div class="card" onclick="startQuiz('unit2')">
+            <h3 id="title-unit2">單元二：製作梯形</h3>
+            <p id="desc-opt2">在釘板或方格紙上，繪製出指定的梯形，或補全給定的邊形成梯形。</p>
           </div>
         </div>
       </div>
@@ -564,6 +568,7 @@
             <!-- 操作與提交區域 -->
             <div id="action-area">
               <div class="btn-group">
+                <button id="btn-reset-selection" class="btn btn-outline hidden" onclick="resetBoardSelection()">重設點選</button>
                 <button id="btn-submit" class="btn btn-primary" onclick="checkAnswer()">提交答案</button>
                 <button id="btn-next" class="btn btn-success hidden" onclick="nextQuestion()">再答一題 ➔</button>
               </div>
@@ -658,9 +663,12 @@
         headerTitle: "梯形",
         langBtn: "English",
         homeSubtitle: "請選擇學習單元",
-        titleUnit1: "梯形",
+        titleUnit1: "單元一 : 認識梯形",
         descOpt1: "學習梯形的定義、特質，並辨別不同類型的四邊形是否為梯形。",
-        unit1: "梯形",
+        titleUnit2: "單元二：製作梯形",
+        descOpt2: "在釘板或方格紙上，繪製出指定的梯形，或補全給定的邊形成梯形。",
+        unit1: "單元一 : 認識梯形",
+        unit2: "單元二：製作梯形",
         tierEasy: "初階",
         tierMedium: "中階",
         tierHard: "高階",
@@ -703,15 +711,27 @@
         sol_def: "梯形的定義是：<strong>只有一組</strong>對邊平行的四邊形。",
         sol_pairs: "這個圖形有 {n} 組平行線，因此它<strong>{res}</strong>梯形。",
         sol_is: "是",
-        sol_isNot: "不是"
+        sol_isNot: "不是",
+
+        u2_easy_iso: "請在畫板上點選 4 個點，繪製一個<strong>等腰梯形</strong>。",
+        u2_easy_right: "請在畫板上點選 4 個點，繪製一個<strong>直角梯形</strong>。",
+        u2_easy_gen: "請在畫板上點選 4 個點，繪製一個<strong>既不等腰也沒有直角的普通梯形</strong>。",
+        u2_easy_any: "請在畫板上點選 4 個點，繪製一個<strong>梯形</strong>。",
+        u2_med: "畫板上已有 2 條邊，請點選 1 個點，與原有的線段組成一個梯形。",
+        u2_hard: "畫板上已有 1 條邊，請點選 2 個點，與原有的線段組成一個梯形。",
+        u2_reset: "重設點選",
+        sol_u2_wrong: "畫出的圖形不符合要求，綠色虛線為其中一種正確的參考答案。"
       },
       en: {
         headerTitle: "Trapezoids",
         langBtn: "繁體中文",
         homeSubtitle: "Please Select a Learning Unit",
-        titleUnit1: "Trapezoids",
+        titleUnit1: "Unit 1: Recognize Trapezoids",
         descOpt1: "Learn the definition and properties of trapezoids, and identify them.",
-        unit1: "Trapezoids",
+        titleUnit2: "Unit 2: Draw Trapezoids",
+        descOpt2: "Draw specific trapezoids on a dot board or grid paper, or complete given sides to form one.",
+        unit1: "Unit 1: Recognize Trapezoids",
+        unit2: "Unit 2: Draw Trapezoids",
         tierEasy: "Basic",
         tierMedium: "Medium",
         tierHard: "Hard",
@@ -754,11 +774,21 @@
         sol_def: "The definition of a trapezoid: a quadrilateral with <strong>exactly one pair</strong> of parallel sides.",
         sol_pairs: "This shape has {n} pair(s) of parallel lines, so it <strong>{res}</strong> a trapezoid.",
         sol_is: "IS",
-        sol_isNot: "IS NOT"
+        sol_isNot: "IS NOT",
+
+        u2_easy_iso: "Please select 4 points to draw an <strong>Isosceles Trapezoid</strong>.",
+        u2_easy_right: "Please select 4 points to draw a <strong>Right Trapezoid</strong>.",
+        u2_easy_gen: "Please select 4 points to draw a <strong>General Trapezoid (neither isosceles nor right)</strong>.",
+        u2_easy_any: "Please select 4 points to draw a <strong>Trapezoid</strong>.",
+        u2_med: "Two sides are given. Please select 1 point to form any trapezoid.",
+        u2_hard: "One side is given. Please select 2 points to form any trapezoid.",
+        u2_reset: "Reset Selection",
+        sol_u2_wrong: "The drawn shape does not meet the requirements. The green dashed line shows one possible correct answer."
       }
     };
 
     let currentLang = 'zh';
+    let currentMode = 'unit1';
     let questions = [];
     let currentQIndex = 0;
     let wrongAttempts = 0;
@@ -766,6 +796,7 @@
     let startTimeObj = null;
     let modalActionCallback = null;
     let currentSelectedOptionValue = null;
+    let userNodes = [];
 
     function getRandomChoice(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
@@ -849,6 +880,7 @@
         // 對於容易錯選的圖形，保留 0 度旋轉以呈現出圖片本意；其他則隨機旋轉
         const rot = shape.isTricky ? 0 : getRandomChoice(rotations);
         qList.push({ 
+            unit: 1,
             tier: 'easy', 
             type: 'tf_shape', 
             shapeObj: shape, 
@@ -862,6 +894,7 @@
       const mediumQuestions = selectedTopics.map(topicGroup => {
         const selectedStatement = getRandomChoice(topicGroup);
         return {
+          unit: 1,
           tier: 'medium',
           type: 'tf_statement',
           qText: selectedStatement.qText,
@@ -879,9 +912,153 @@
       return qList;
     }
 
+    function generateUnit2Questions() {
+      const qList = [];
+      const types = ['isosceles', 'right', 'general', 'any'];
+      const dotTypes = shuffleArray(types).slice(0, 2);
+      const gridTypes = shuffleArray(types).slice(0, 2);
+      
+      const easySolutions = {
+        'dot': {
+          'isosceles': [{x:1,y:1}, {x:3,y:1}, {x:4,y:3}, {x:0,y:3}],
+          'right': [{x:1,y:1}, {x:3,y:1}, {x:4,y:3}, {x:1,y:3}],
+          'general': [{x:1,y:1}, {x:2,y:1}, {x:4,y:3}, {x:0,y:3}],
+          'any': [{x:1,y:1}, {x:3,y:1}, {x:4,y:3}, {x:0,y:3}]
+        },
+        'grid': {
+          'isosceles': [{x:2,y:1}, {x:6,y:1}, {x:7,y:4}, {x:1,y:4}],
+          'right': [{x:2,y:1}, {x:5,y:1}, {x:7,y:4}, {x:2,y:4}],
+          'general': [{x:2,y:1}, {x:4,y:1}, {x:7,y:4}, {x:1,y:4}],
+          'any': [{x:2,y:1}, {x:6,y:1}, {x:7,y:4}, {x:1,y:4}]
+        }
+      };
+      
+      dotTypes.forEach(t => {
+        qList.push({ unit: 2, tier: 'easy', board: 'dot', targetType: t, lockedNodes: [], solution: easySolutions['dot'][t] });
+      });
+      gridTypes.forEach(t => {
+        qList.push({ unit: 2, tier: 'easy', board: 'grid', targetType: t, lockedNodes: [], solution: easySolutions['grid'][t] });
+      });
+      
+      const medPresets = shuffleArray([
+        { board: 'grid', nodes: [{x:2, y:1}, {x:6, y:1}, {x:3, y:4}], sol: [{x:5, y:4}] },
+        { board: 'grid', nodes: [{x:1, y:1}, {x:2, y:4}, {x:5, y:4}], sol: [{x:6, y:1}] },
+        { board: 'dot', nodes: [{x:1, y:1}, {x:3, y:1}, {x:3, y:3}], sol: [{x:2, y:3}] },
+        { board: 'dot', nodes: [{x:0, y:2}, {x:2, y:4}, {x:4, y:2}], sol: [{x:2, y:0}] }
+      ]);
+      for(let i=0; i<3; i++) {
+        qList.push({ unit: 2, tier: 'medium', board: medPresets[i].board, targetType: 'any', lockedNodes: medPresets[i].nodes, solution: medPresets[i].sol });
+      }
+    
+      const hardPresets = shuffleArray([
+        { board: 'grid', nodes: [{x:2, y:1}, {x:2, y:4}], sol: [{x:5, y:4}, {x:6, y:1}] },
+        { board: 'grid', nodes: [{x:2, y:1}, {x:5, y:4}], sol: [{x:6, y:4}, {x:1, y:1}] },
+        { board: 'dot', nodes: [{x:1, y:1}, {x:3, y:3}], sol: [{x:1, y:3}, {x:4, y:1}] },
+        { board: 'dot', nodes: [{x:1, y:2}, {x:3, y:2}], sol: [{x:2, y:4}, {x:4, y:4}] }
+      ]);
+      for(let i=0; i<3; i++) {
+        qList.push({ unit: 2, tier: 'hard', board: hardPresets[i].board, targetType: 'any', lockedNodes: hardPresets[i].nodes, solution: hardPresets[i].sol });
+      }
+      
+      return qList;
+    }
+
+    // 幾何計算與判斷
+    function sortPointsClockwise(pts) {
+      const cx = pts.reduce((sum, p) => sum + p.x, 0) / pts.length;
+      const cy = pts.reduce((sum, p) => sum + p.y, 0) / pts.length;
+      return [...pts].sort((a, b) => {
+        const a1 = Math.atan2(a.y - cy, a.x - cx);
+        const a2 = Math.atan2(b.y - cy, b.x - cx);
+        return a1 - a2;
+      });
+    }
+
+    function checkTrapezoidType(pts) {
+      if (pts.length !== 4) return 'none';
+      const v = [];
+      for(let i=0; i<4; i++) {
+        v.push({ x: pts[(i+1)%4].x - pts[i].x, y: pts[(i+1)%4].y - pts[i].y });
+      }
+      const isPar = (v1, v2) => (v1.x * v2.y - v1.y * v2.x) === 0;
+      const len2 = (v1) => v1.x*v1.x + v1.y*v1.y;
+      
+      // 避免面積為 0 或相鄰邊平行(三點共線)
+      for(let i=0; i<4; i++) {
+        if (len2(v[i]) === 0) return 'none';
+        if (isPar(v[i], v[(i+1)%4])) return 'none';
+      }
+      
+      const par02 = isPar(v[0], v[2]);
+      const par13 = isPar(v[1], v[3]);
+      
+      if (par02 && par13) return 'parallelogram'; 
+      if (!par02 && !par13) return 'quadrilateral'; 
+      
+      let isRight = false;
+      for(let i=0; i<4; i++) {
+        if (v[i].x * v[(i+1)%4].x + v[i].y * v[(i+1)%4].y === 0) isRight = true;
+      }
+      
+      let isIso = false;
+      if (par02) {
+        if (len2(v[1]) === len2(v[3])) isIso = true;
+      } else {
+        if (len2(v[0]) === len2(v[2])) isIso = true;
+      }
+      
+      if (isRight) return 'right';
+      if (isIso) return 'isosceles';
+      return 'general';
+    }
+
+    // 產生單元二的反饋分析字句
+    function generateUnit2Feedback(targetType, drawnType) {
+      let drawnName = "";
+      let drawnReason = "";
+      
+      if (drawnType === 'invalid' || drawnType === 'none') {
+         return currentLang === 'zh' ? "你畫出的不是一個正常的四邊形（可能點重疊或連成了三角形）。<br>綠色虛線為其中一種正確的參考答案。" : "You did not draw a valid quadrilateral (points might overlap or form a triangle).<br>The green dashed line shows one possible correct answer.";
+      } else if (drawnType === 'parallelogram') {
+         drawnName = currentLang === 'zh' ? "平行四邊形類（如平行四邊形、長方形或正方形）" : "Parallelogram-type shape";
+         drawnReason = currentLang === 'zh' ? "它有 2 組對邊平行，但梯形必須「只有 1 組」對邊平行。" : "It has 2 pairs of parallel sides, but a trapezoid must have EXACTLY 1 pair.";
+      } else if (drawnType === 'quadrilateral') {
+         drawnName = currentLang === 'zh' ? "普通的四邊形" : "General Quadrilateral";
+         drawnReason = currentLang === 'zh' ? "它沒有任何對邊是平行的，所以不是梯形。" : "It has NO parallel sides, so it is not a trapezoid.";
+      } else if (drawnType === 'isosceles') {
+         drawnName = currentLang === 'zh' ? "等腰梯形" : "Isosceles Trapezoid";
+         drawnReason = currentLang === 'zh' ? "它的兩腰長度相等。" : "Its two non-parallel sides (legs) are equal.";
+      } else if (drawnType === 'right') {
+         drawnName = currentLang === 'zh' ? "直角梯形" : "Right Trapezoid";
+         drawnReason = currentLang === 'zh' ? "它包含了直角。" : "It contains right angles.";
+      } else if (drawnType === 'general') {
+         drawnName = currentLang === 'zh' ? "普通梯形" : "General Trapezoid";
+         drawnReason = currentLang === 'zh' ? "它既沒有直角，兩腰也不相等。" : "It has no right angles and its legs are not equal.";
+      }
+
+      let baseMsg = currentLang === 'zh' ? `分析：你畫出的是「<strong>${drawnName}</strong>」，${drawnReason}<br>` : `Analysis: You drew a <strong>${drawnName}</strong>. ${drawnReason}<br>`;
+      let refMsg = currentLang === 'zh' ? "綠色虛線為其中一種正確的參考答案。" : "The green dashed line shows one possible correct answer.";
+
+      if (targetType === 'any') {
+         return baseMsg + (currentLang === 'zh' ? `題目要求畫出一個梯形。<br>${refMsg}` : `The prompt asked for a trapezoid.<br>${refMsg}`);
+      } else {
+         let targetName = "";
+         if (targetType === 'isosceles') targetName = currentLang === 'zh' ? "等腰梯形" : "Isosceles Trapezoid";
+         if (targetType === 'right') targetName = currentLang === 'zh' ? "直角梯形" : "Right Trapezoid";
+         if (targetType === 'general') targetName = currentLang === 'zh' ? "普通梯形" : "General Trapezoid";
+
+         return baseMsg + (currentLang === 'zh' ? `但題目要求的是「<strong>${targetName}</strong>」。<br>${refMsg}` : `But the question required a <strong>${targetName}</strong>.<br>${refMsg}`);
+      }
+    }
+
     // 啟動測驗
-    function startQuiz() {
-      questions = generateQuizQuestions();
+    function startQuiz(unit) {
+      currentMode = unit;
+      if (currentMode === 'unit1') {
+        questions = generateQuizQuestions();
+      } else {
+        questions = generateUnit2Questions();
+      }
       currentQIndex = 0;
       records = [];
       startTimeObj = new Date();
@@ -919,6 +1096,102 @@
           svg += `<polyline points="${lx},${ly} ${cx},${cy} ${rx},${ry}" fill="none" stroke="${color}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`;
       });
       return svg;
+    }
+
+    function renderBoardSVG(q, userNodes, showSolution = false) {
+      let content = '';
+      let startX, startY, step, maxCols, maxRows;
+      
+      if (q.board === 'dot') {
+        startX = 130; startY = 40; step = 60; maxCols = 4; maxRows = 4;
+        content += `<rect x="90" y="0" width="320" height="320" fill="#fef08a" rx="10" />`;
+        for(let r=0; r<=maxRows; r++) {
+          for(let c=0; c<=maxCols; c++) {
+            content += `<circle cx="${startX + c*step}" cy="${startY + r*step}" r="4" fill="#333" />`;
+          }
+        }
+      } else {
+        startX = 50; startY = 35; step = 50; maxCols = 8; maxRows = 5;
+        for (let c = 0; c <= maxCols; c++) {
+          const x = startX + c * step;
+          content += `<line x1="${x}" y1="${startY}" x2="${x}" y2="${startY + maxRows*step}" stroke="#7dd3fc" stroke-width="1.5" />`;
+        }
+        for (let r = 0; r <= maxRows; r++) {
+          const y = startY + r * step;
+          content += `<line x1="${startX}" y1="${y}" x2="${startX + maxCols*step}" y2="${y}" stroke="#7dd3fc" stroke-width="1.5" />`;
+        }
+      }
+
+      if (q.lockedNodes && q.lockedNodes.length > 0) {
+        let ptsStr = q.lockedNodes.map(p => `${startX + p.x*step},${startY + p.y*step}`).join(' ');
+        content += `<polyline points="${ptsStr}" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />`;
+        q.lockedNodes.forEach(p => {
+           content += `<circle cx="${startX + p.x*step}" cy="${startY + p.y*step}" r="6" fill="#1e293b" />`;
+        });
+      }
+
+      let allNodes = [...(q.lockedNodes || []), ...userNodes];
+      
+      if (allNodes.length === 4) {
+        let sorted = sortPointsClockwise(allNodes);
+        let ptsStr = sorted.map(p => `${startX + p.x*step},${startY + p.y*step}`).join(' ');
+        let strokeColor = showSolution ? '#dc2626' : '#2563eb';
+        let fillColor = showSolution ? 'rgba(220, 38, 38, 0.2)' : 'rgba(59, 130, 246, 0.3)';
+        content += `<polygon points="${ptsStr}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="3" stroke-linejoin="round" />`;
+      }
+
+      if (showSolution && q.solution) {
+        let solNodes = [...(q.lockedNodes || []), ...q.solution];
+        let sortedSol = sortPointsClockwise(solNodes);
+        let solPtsStr = sortedSol.map(p => `${startX + p.x*step},${startY + p.y*step}`).join(' ');
+        content += `<polygon points="${solPtsStr}" fill="rgba(22, 163, 74, 0.3)" stroke="#16a34a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 6" />`;
+        
+        q.solution.forEach(p => {
+          content += `<circle cx="${startX + p.x*step}" cy="${startY + p.y*step}" r="8" fill="#16a34a" />`;
+          content += `<circle cx="${startX + p.x*step}" cy="${startY + p.y*step}" r="12" fill="none" stroke="#16a34a" stroke-width="2" />`;
+        });
+      }
+
+      userNodes.forEach(p => {
+        content += `<circle cx="${startX + p.x*step}" cy="${startY + p.y*step}" r="8" fill="#2563eb" />`;
+        content += `<circle cx="${startX + p.x*step}" cy="${startY + p.y*step}" r="12" fill="none" stroke="#2563eb" stroke-width="2" />`;
+      });
+
+      if (!showSolution) {
+        for(let r=0; r<=maxRows; r++) {
+          for(let c=0; c<=maxCols; c++) {
+            if (q.lockedNodes && q.lockedNodes.some(n => n.x === c && n.y === r)) continue;
+            content += `<circle cx="${startX + c*step}" cy="${startY + r*step}" r="20" fill="transparent" cursor="pointer" onclick="toggleBoardNode(${c}, ${r})" />`;
+          }
+        }
+      }
+
+      return `<svg viewBox="0 0 500 320" class="line-svg">${content}</svg>`;
+    }
+
+    function toggleBoardNode(x, y) {
+      if (document.getElementById('btn-submit').classList.contains('hidden')) return;
+      const idx = userNodes.findIndex(n => n.x === x && n.y === y);
+      if (idx > -1) {
+        userNodes.splice(idx, 1);
+      } else {
+        const q = questions[currentQIndex];
+        const targetCount = 4 - (q.lockedNodes ? q.lockedNodes.length : 0);
+        if (userNodes.length < targetCount) {
+          userNodes.push({x, y});
+        } else {
+          userNodes.shift();
+          userNodes.push({x, y});
+        }
+      }
+      const canvasContainer = document.querySelector('.canvas-container');
+      canvasContainer.innerHTML = renderBoardSVG(questions[currentQIndex], userNodes, false);
+    }
+
+    function resetBoardSelection() {
+      userNodes = [];
+      const canvasContainer = document.querySelector('.canvas-container');
+      canvasContainer.innerHTML = renderBoardSVG(questions[currentQIndex], userNodes, false);
     }
 
     function renderShapeSVG(shapeObj, rotation, showSolution = false) {
@@ -972,7 +1245,7 @@
       const t = i18n[currentLang];
       const q = questions[currentQIndex];
 
-      document.getElementById('quiz-mode-name').innerText = t.unit1;
+      document.getElementById('quiz-mode-name').innerText = currentMode === 'unit1' ? t.unit1 : t.unit2;
       const tierBadge = document.getElementById('quiz-tier-badge');
       if (q.tier === 'easy') {
         tierBadge.className = 'tier-badge tier-easy';
@@ -990,26 +1263,50 @@
       const qTitleEl = document.createElement('div');
       qTitleEl.className = 'q-story-title';
       
-      if (q.type === 'tf_shape') {
-          qTitleEl.innerText = t.q_shape_prompt;
+      document.getElementById('btn-reset-selection').classList.add('hidden');
+
+      if (q.unit === 1) {
+          if (q.type === 'tf_shape') {
+              qTitleEl.innerText = t.q_shape_prompt;
+              displayArea.appendChild(qTitleEl);
+              
+              const canvasContainer = document.createElement('div');
+              canvasContainer.className = 'canvas-container';
+              canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation);
+              displayArea.appendChild(canvasContainer);
+              
+              displayArea.appendChild(createOptionsGroup([t.optYes, t.optNo], ['true', 'false']));
+          } else if (q.type === 'tf_statement') {
+              qTitleEl.innerText = t.q_statement_prompt;
+              displayArea.appendChild(qTitleEl);
+              
+              const statementBox = document.createElement('div');
+              statementBox.className = 'statement-box';
+              statementBox.innerText = q.qText[currentLang];
+              displayArea.appendChild(statementBox);
+              
+              displayArea.appendChild(createOptionsGroup([t.optTrue, t.optFalse], ['true', 'false']));
+          }
+      } else if (q.unit === 2) {
+          if (q.tier === 'easy') {
+              if (q.targetType === 'isosceles') qTitleEl.innerHTML = t.u2_easy_iso;
+              else if (q.targetType === 'right') qTitleEl.innerHTML = t.u2_easy_right;
+              else if (q.targetType === 'general') qTitleEl.innerHTML = t.u2_easy_gen;
+              else qTitleEl.innerHTML = t.u2_easy_any;
+          } else if (q.tier === 'medium') {
+              qTitleEl.innerHTML = t.u2_med;
+          } else {
+              qTitleEl.innerHTML = t.u2_hard;
+          }
           displayArea.appendChild(qTitleEl);
           
           const canvasContainer = document.createElement('div');
           canvasContainer.className = 'canvas-container';
-          canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation);
+          userNodes = []; 
+          canvasContainer.innerHTML = renderBoardSVG(q, userNodes, false);
           displayArea.appendChild(canvasContainer);
-          
-          displayArea.appendChild(createOptionsGroup([t.optYes, t.optNo], ['true', 'false']));
-      } else if (q.type === 'tf_statement') {
-          qTitleEl.innerText = t.q_statement_prompt;
-          displayArea.appendChild(qTitleEl);
-          
-          const statementBox = document.createElement('div');
-          statementBox.className = 'statement-box';
-          statementBox.innerText = q.qText[currentLang];
-          displayArea.appendChild(statementBox);
-          
-          displayArea.appendChild(createOptionsGroup([t.optTrue, t.optFalse], ['true', 'false']));
+          document.getElementById('btn-reset-selection').classList.remove('hidden');
+          document.getElementById('btn-reset-selection').innerText = t.u2_reset;
       }
 
       document.getElementById('feedback-area').classList.add('hidden');
@@ -1024,23 +1321,55 @@
       const t = i18n[currentLang];
       const feedback = document.getElementById('feedback-area');
 
-      if (currentSelectedOptionValue === null) {
-        alert(currentLang === 'zh' ? "請選擇一個答案！" : "Please select an answer!");
-        return;
-      }
-
       let isCorrect = false;
       let userAnsDisplay = "";
       let targetAnsStr = "";
 
-      if (q.type === 'tf_shape') {
-          userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optYes : t.optNo;
-          targetAnsStr = q.answer ? t.optYes : t.optNo;
-          isCorrect = (currentSelectedOptionValue === q.answer.toString());
-      } else if (q.type === 'tf_statement') {
-          userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optTrue : t.optFalse;
-          targetAnsStr = q.answer ? t.optTrue : t.optFalse;
-          isCorrect = (currentSelectedOptionValue === q.answer.toString());
+      if (q.unit === 1) {
+          if (currentSelectedOptionValue === null) {
+            alert(currentLang === 'zh' ? "請選擇一個答案！" : "Please select an answer!");
+            return;
+          }
+          if (q.type === 'tf_shape') {
+              userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optYes : t.optNo;
+              targetAnsStr = q.answer ? t.optYes : t.optNo;
+              isCorrect = (currentSelectedOptionValue === q.answer.toString());
+          } else if (q.type === 'tf_statement') {
+              userAnsDisplay = currentSelectedOptionValue === 'true' ? t.optTrue : t.optFalse;
+              targetAnsStr = q.answer ? t.optTrue : t.optFalse;
+              isCorrect = (currentSelectedOptionValue === q.answer.toString());
+          }
+      } else if (q.unit === 2) {
+          const requiredCount = 4 - (q.lockedNodes ? q.lockedNodes.length : 0);
+          if (userNodes.length < requiredCount) {
+            alert(currentLang === 'zh' ? "請選取足夠的點數！" : "Please select enough points!");
+            return;
+          }
+          const allNodes = [...(q.lockedNodes || []), ...userNodes];
+          const sorted = sortPointsClockwise(allNodes);
+          const trapType = checkTrapezoidType(sorted);
+          
+          if (q.tier === 'easy') {
+            if (q.targetType === 'any') {
+               isCorrect = (trapType === 'isosceles' || trapType === 'right' || trapType === 'general');
+            } else {
+               isCorrect = (trapType === q.targetType);
+            }
+          } else {
+            isCorrect = (trapType === 'isosceles' || trapType === 'right' || trapType === 'general');
+          }
+          
+          if (isCorrect) {
+             userAnsDisplay = currentLang === 'zh' ? "正確完成圖形" : "Correct Shape";
+             targetAnsStr = currentLang === 'zh' ? "正確完成圖形" : "Correct Shape";
+          } else {
+             userAnsDisplay = currentLang === 'zh' ? "畫出的圖形不符合要求" : "Shape does not meet requirements";
+             if (q.tier === 'easy') {
+                targetAnsStr = currentLang === 'zh' ? `指定的梯形` : `Requested Trapezoid`;
+             } else {
+                targetAnsStr = currentLang === 'zh' ? "任意梯形" : "Any Trapezoid";
+             }
+          }
       }
 
       if (!records[currentQIndex]) {
@@ -1082,15 +1411,51 @@
         // 只有兩個選項，第一次答錯直接給予詳解
         let solutionFeedback = "";
         
-        if (q.type === 'tf_shape') {
+        if (q.unit === 1) {
+            if (q.type === 'tf_shape') {
+               const canvasContainer = document.querySelector('.canvas-container');
+               canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation, true);
+               
+               let resText = q.answer ? t.sol_is : t.sol_isNot;
+               let pairText = t.sol_pairs.replace('{n}', q.shapeObj.pairs).replace('{res}', resText);
+               solutionFeedback = `${t.sol_def}<br>${pairText} (圖形名稱: <strong>${q.shapeObj.name[currentLang]}</strong>)`;
+            } else if (q.type === 'tf_statement') {
+               solutionFeedback = q.solution[currentLang];
+            }
+            
+            document.querySelectorAll('.opt-btn').forEach(b => {
+                b.disabled = true;
+                if (b.classList.contains('selected')) {
+                    b.classList.add('wrong-selected');
+                }
+                if (q.type === 'tf_shape') {
+                    if ((b.innerText === t.optYes && q.answer) || (b.innerText === t.optNo && !q.answer)) {
+                        b.classList.remove('wrong-selected'); 
+                        b.classList.add('selected');
+                        b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
+                    } else { 
+                        b.classList.remove('selected'); 
+                    }
+                } else if (q.type === 'tf_statement') {
+                    if ((b.innerText === t.optTrue && q.answer) || (b.innerText === t.optFalse && !q.answer)) {
+                        b.classList.remove('wrong-selected');
+                        b.classList.add('selected');
+                        b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
+                    } else { 
+                        b.classList.remove('selected'); 
+                    }
+                }
+            });
+        } else if (q.unit === 2) {
            const canvasContainer = document.querySelector('.canvas-container');
-           canvasContainer.innerHTML = renderShapeSVG(q.shapeObj, q.rotation, true);
+           canvasContainer.innerHTML = renderBoardSVG(q, userNodes, true);
            
-           let resText = q.answer ? t.sol_is : t.sol_isNot;
-           let pairText = t.sol_pairs.replace('{n}', q.shapeObj.pairs).replace('{res}', resText);
-           solutionFeedback = `${t.sol_def}<br>${pairText} (圖形名稱: <strong>${q.shapeObj.name[currentLang]}</strong>)`;
-        } else if (q.type === 'tf_statement') {
-           solutionFeedback = q.solution[currentLang];
+           const allNodes = [...(q.lockedNodes || []), ...userNodes];
+           const sorted = sortPointsClockwise(allNodes);
+           const trapType = checkTrapezoidType(sorted);
+           
+           solutionFeedback = generateUnit2Feedback(q.targetType, trapType);
+           document.getElementById('btn-reset-selection').classList.add('hidden');
         }
         
         feedback.className = "feedback-box feedback-danger";
@@ -1099,33 +1464,6 @@
         document.getElementById('btn-next').classList.remove('hidden');
         document.getElementById('btn-next').focus();
         
-        document.querySelectorAll('.opt-btn').forEach(b => {
-            b.disabled = true;
-            
-            // 如果是學生錯選的答案，加上錯誤樣式 (紅色搖晃)
-            if (b.classList.contains('selected')) {
-                b.classList.add('wrong-selected');
-            }
-            
-            // Highlight correct answer (綠色標示)
-            if (q.type === 'tf_shape') {
-                if ((b.innerText === t.optYes && q.answer) || (b.innerText === t.optNo && !q.answer)) {
-                    b.classList.remove('wrong-selected'); 
-                    b.classList.add('selected');
-                    b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
-                } else { 
-                    b.classList.remove('selected'); 
-                }
-            } else if (q.type === 'tf_statement') {
-                if ((b.innerText === t.optTrue && q.answer) || (b.innerText === t.optFalse && !q.answer)) {
-                    b.classList.remove('wrong-selected');
-                    b.classList.add('selected');
-                    b.style.borderColor = '#16a34a'; b.style.backgroundColor = '#f0fff4'; b.style.color = '#16a34a';
-                } else { 
-                    b.classList.remove('selected'); 
-                }
-            }
-        });
         feedback.classList.remove('hidden');
       }
     }
@@ -1151,6 +1489,8 @@
       document.getElementById('home-subtitle').innerText = t.homeSubtitle;
       document.getElementById('title-unit1').innerText = t.titleUnit1;
       document.getElementById('desc-opt1').innerText = t.descOpt1;
+      document.getElementById('title-unit2').innerText = t.titleUnit2;
+      document.getElementById('desc-opt2').innerText = t.descOpt2;
       document.getElementById('lbl-back-btn').innerText = t.backBtn;
 
       if (!document.getElementById('page-quiz').classList.contains('hidden')) {
@@ -1173,10 +1513,18 @@
     }
 
     function getQuestionSummaryText(q) {
-      if (q.type === 'tf_shape') {
-          return currentLang === 'zh' ? `判斷圖形是否梯形 (${q.shapeObj.name.zh})` : `Identify if shape is a trapezoid (${q.shapeObj.name.en})`;
-      } else {
-          return currentLang === 'zh' ? `判斷句子正確性` : `True/False Statement Evaluation`;
+      if (q.unit === 1) {
+          if (q.type === 'tf_shape') {
+              return currentLang === 'zh' ? `判斷圖形是否梯形 (${q.shapeObj.name.zh})` : `Identify if shape is a trapezoid (${q.shapeObj.name.en})`;
+          } else {
+              return currentLang === 'zh' ? `判斷句子正確性` : `True/False Statement Evaluation`;
+          }
+      } else if (q.unit === 2) {
+          if (q.tier === 'easy') {
+              return currentLang === 'zh' ? `繪製${q.targetType === 'isosceles' ? '等腰' : q.targetType === 'right' ? '直角' : '普通'}梯形` : `Draw ${q.targetType} trapezoid`;
+          } else {
+              return currentLang === 'zh' ? `補全邊線形成梯形` : `Complete trapezoid`;
+          }
       }
     }
 
@@ -1218,7 +1566,7 @@
       const total = questions.length;
       const accuracyPct = Math.round((correctCount / total) * 100);
 
-      document.getElementById('report-unit-name').innerText = t.unit1;
+      document.getElementById('report-unit-name').innerText = currentMode === 'unit1' ? t.unit1 : t.unit2;
       document.getElementById('val-unit-mastery').innerText = `${correctCount} / ${total} (${accuracyPct}%)`;
 
       const correctContainer = document.getElementById('correct-list-container');
@@ -1261,7 +1609,7 @@
     }
 
     function retryPractice() {
-      startQuiz();
+      startQuiz(currentMode);
     }
 
     function goHome() {
